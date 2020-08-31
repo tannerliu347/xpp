@@ -1,28 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(xpp_examples)
+project(xpp_laikago)
 
 add_compile_options(-std=c++11)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rosbag
   xpp_vis
-  xpp_hyq
-  xpp_quadrotor
-  xpp_laikago
 )
-
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package()
-
-find_package(pinocchio REQUIRED)
-find_package(crocoddyl REQUIRED)
 
 
 ###########
@@ -30,30 +19,29 @@ find_package(crocoddyl REQUIRED)
 ###########
 ## Specify additional locations of header files
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(monoped_publisher src/monoped_pub.cc)
-target_link_libraries(monoped_publisher
-  ${catkin_LIBRARIES}
+# Declare a C++ library
+add_library(${PROJECT_NAME}
+  src/laikagoleg_inverse_kinematics.cc
+  src/inverse_kinematics_laikago4.cc
 )
 
-add_executable(laikago_publisher src/laikago_pub.cc)
-target_link_libraries(laikago_publisher pinocchio::pinocchio crocoddyl::crocoddyl ${catkin_LIBRARIES})
-
-
-add_executable(quadrotor_bag_builder src/quadrotor_bag_builder.cc)
-target_link_libraries(quadrotor_bag_builder
+## URDF visualizers for all HyQ variants
+add_executable(urdf_visualizer_laikago src/exe/urdf_visualizer_laikago.cc)
+target_link_libraries(urdf_visualizer_laikago
+  ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
-
 
 #############
 ## Install ##
 #############
 # Mark library for installation
 install(
-  TARGETS monoped_publisher laikago_publisher quadrotor_bag_builder
+  TARGETS ${PROJECT_NAME} urdf_visualizer_laikago
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -61,6 +49,6 @@ install(
 
 # Mark other files for installation
 install(
-  DIRECTORY bags launch
+  DIRECTORY launch rviz meshes urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

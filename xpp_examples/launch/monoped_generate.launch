@@ -1,8 +1,8 @@
 <launch>
    
-  <!-- visualizes goal, opt. parameters and cartesian base state, endeffector positions and forces -->
+  <!-- visualizes goal, opt. parameters and cartesian base state, endeffector positions and forces >
   <node name="rviz_marker_node" pkg="xpp_vis" type="rviz_marker_node" output="screen">
-  </node>
+  </node-->
 
   <!-- Launch rviz with specific configuration -->
   <node name="rviz_xpp" pkg="rviz" type="rviz"  args="-d $(find xpp_examples)/rviz/xpp_monoped.rviz">

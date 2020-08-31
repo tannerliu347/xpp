@@ -19,5 +19,6 @@
   <depend>rosbag</depend>
   <depend>xpp_vis</depend>
   <depend>xpp_hyq</depend>
+  <depend>xpp_laikago</depend>
   <depend>xpp_quadrotor</depend>
 </package>

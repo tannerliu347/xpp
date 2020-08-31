@@ -1,20 +1,15 @@
 /******************************************************************************
 Copyright (c) 2017, Alexander W. Winkler. All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-
 * Redistributions of source code must retain the above copyright notice, this
   list of conditions and the following disclaimer.
-
 * Redistributions in binary form must reproduce the above copyright notice,
   this list of conditions and the following disclaimer in the documentation
   and/or other materials provided with the distribution.
-
 * Neither the name of the copyright holder nor the names of its
   contributors may be used to endorse or promote products derived from
   this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,53 +22,41 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include <ros/ros.h>
+#ifndef XPP_VIS_INVERSEKINEMATICS_LAIKAGO4_H_
+#define XPP_VIS_INVERSEKINEMATICS_LAIKAGO4_H_
 
-#include <xpp_msgs/RobotStateCartesian.h>
-#include <xpp_msgs/topic_names.h>
+#include <xpp_vis/inverse_kinematics.h>
+#include <xpp_laikago/laikagoleg_inverse_kinematics.h>
 
-#include <xpp_states/convert.h>
-#include <xpp_states/robot_state_cartesian.h>
+namespace xpp {
 
+/**
+ * @brief Inverse kinematics function for the Laikago robot.
+ */
+class InverseKinematicsLaikago4 : public InverseKinematics {
+public:
+  InverseKinematicsLaikago4() = default;
+  virtual ~InverseKinematicsLaikago4() = default;
 
-using namespace xpp;
+  /**
+   * @brief Returns joint angles to reach for a specific foot position.
+   * @param pos_B  3D-position of the foot expressed in the base frame (B).
+   */
+  Joints GetAllJointAngles(const EndeffectorsPos& pos_b) const override;
 
-int main(int argc, char *argv[])
-{
-  ros::init(argc, argv, "monped_publisher_node");
+  /**
+   * @brief Number of endeffectors (feet, hands) this implementation expects.
+   */
+  int GetEECount() const override { return 4; };
 
-  ros::NodeHandle n;
-  ros::Publisher state_pub = n.advertise<xpp_msgs::RobotStateCartesian>(xpp_msgs::robot_state_desired, 1);
-  ROS_INFO_STREAM("Waiting for Subscriber...");
-  while(ros::ok() && state_pub.getNumSubscribers() == 0)
-    ros::Rate(100).sleep();
-  ROS_INFO_STREAM("Subscriber to initial state connected");
+private:
+  Vector3d base2hip_LF_ = Vector3d(0.21935, 0.0875, 0);
+  // Vector3d base2hip_RF_ = Vector3d(0.21935, -0.0875, 0);
+  Vector3d base2hip_LH_ = Vector3d(-0.21935, 0.0875, 0);
+  // Vector3d base2hip_RH_ = Vector3d(-0.21935, -0.0875, 0);
+  LaikagolegInverseKinematics leg;
+};
 
+} /* namespace xpp */
 
-  // visualize the state of a one-legged hopper
-  RobotStateCartesian hopper(1);
-
-  // publishes a sequence of states for a total duration of T spaced 0.01s apart.
-  double T = 2.0;
-  double t = 0.0;
-  double dt = 0.01;
-  //while (t < T)
-  while (ros::ok())
-  {
-    // base and foot follow half a sine motion up and down
-    hopper.base_.lin.p_.z() = 0.7 - 0.05*sin(2*M_PI/(2*T)*t);
-    hopper.ee_motion_.at(0).p_.z() = 0.1*sin(2*M_PI/(2*T)*t);
-    hopper.ee_forces_.at(0).z() = 100; // N
-    hopper.ee_contact_.at(0) = true;
-
-    state_pub.publish(Convert::ToRos(hopper));
-
-    ros::spinOnce();
-    ros::Duration(dt).sleep(); // pause loop so visualization has correct speed.
-    t += dt;
-  }
-
-
-  return 0;
-}
-
+#endif /* XPP_VIS_INVERSEKINEMATICS_LAIKAGO4_H_ */
